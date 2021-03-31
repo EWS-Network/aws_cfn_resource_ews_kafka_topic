@@ -50,3 +50,9 @@ Resources:
       Name: !Ref TopicName
       PartitionsCount: !Ref Partitions
       BootstrapServers: !Ref BootstrapServers
+
+Outputs:
+  TopicName:
+    Value: !Ref NewKafkaTopic
+  TopicPartitions:
+    Value: !GetAtt NewKafkaTopic.Partitions

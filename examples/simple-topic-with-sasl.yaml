@@ -61,3 +61,9 @@ Resources:
       BootstrapServers: !Ref BootstrapServers
       SASLUsername: !Ref SASLUsername
       SASLPassword: !Ref SASLPassword
+
+Outputs:
+  TopicName:
+    Value: !Ref NewKafkaTopic
+  TopicPartitions:
+    Value: !GetAtt NewKafkaTopic.Partitions
