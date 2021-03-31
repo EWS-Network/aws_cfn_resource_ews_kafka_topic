@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  Template to use the custom resource to create new kafka topics. In this example, creates a single Kafka topic.
+
+Metadata:
+  Maintainer: john@ews-network.net
+  Version: 2021-03-31
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      LambdaFunctionName:
+        default: Name of the lambda function you created that you want to use.
+      TopicName:
+        default: Name of your Kafka topic you want to manage via CFN
+      Partitions:
+        default: Number of partitions for the topic
+      BootstrapServers:
+        default: The bootstrap servers endpoint
+    ParameterGroups:
+      - Parameters:
+          - LambdaFunctionName
+        Label:
+          default: Lambda Settings
+      - Parameters:
+          - TopicName
+          - Partitions
+          - BootstrapServers
+          - SASLUsername
+          - SASLPassword
+        Label:
+          default: Kafka Settings
+
+Parameters:
+  LambdaFunctionName:
+    Type: String
+    Default: cfn-kafka-topic-provider
+
+  TopicName:
+    Type: String
+
+  Partitions:
+    Type: Number
+
+  BootstrapServers:
+    Type: String
+    Default: broker.cluster.internal:9092
+
+  SASLUsername:
+    Type: String
+
+  SASLPassword:
+    Type: String
+    NoEcho: True
+
+Resources:
+  NewKafkaTopic:
+    Type: Custom::KafkaTopic
+    Properties:
+      ServiceToken: !Sub "arn:${AWS::Partition}:lambda:${AWS::Region}:${AWS::AccountId}:function:${LambdaFunctionName}"
+      Name: !Ref TopicName
+      PartitionsCount: !Ref Partitions
+      BootstrapServers: !Ref BootstrapServers
+      SASLUsername: !Ref SASLUsername
+      SASLPassword: !Ref SASLPassword

@@ -1,0 +1,143 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform:
+  - AWS::Serverless-2016-10-31
+
+Description:
+  Template to create the Lambda function used by the Custom resource provider Custom::KafkaTopic
+
+Metadata:
+  Maintainer: john@ews-network.net
+  Version: 2021-03-31
+  AWS::CloudFormation::Interface:
+    ParameterLabels:
+      FunctionRoleArn:
+        default: Existing IAM Role to use for the CFN Macro Lambda function
+      PermissionsBoundary:
+        default: When creating a new role, assigns permissions boundary IAM policy via ARN
+    ParameterGroups:
+      - Parameters:
+          - MemorySize
+        Label:
+          default: Lambda Settings
+      - Parameters:
+          - FunctionRoleArn
+          - PermissionsBoundary
+        Label:
+          default: IAM Settings
+      - Parameters:
+          - VpcId
+          - Subnets
+          - OverrideSecurityGroup
+        Label:
+          default: VPC Settings
+
+Parameters:
+  VpcId:
+    Type: String
+    Default: 'none'
+    AllowedPattern: 'none|vpc-[a-z0-9]+'
+
+  Subnets:
+    Type: CommaDelimitedList
+    Default: ''
+
+  OverrideSecurityGroup:
+    Type: String
+    Default: 'none'
+    AllowedPattern: 'none|sg-[a-z0-9]+'
+
+  PermissionsBoundary:
+    Type: String
+    Default: none
+    AllowedPattern: none|(arn:aws([a-z]+)?:iam::\d{12}:policy/\S+$)
+
+  FunctionRoleArn:
+    Type: String
+    AllowedPattern: none|(arn:aws([a-z]+)?:iam::\d{12}:role/\S+$)
+    Default: none
+
+  MemorySize:
+    Type: Number
+    MinValue: 128
+    Default: 128
+
+Conditions:
+  DoNotAttachToVpc: !Equals [ !Ref VpcId, "none" ]
+  CreateLambdaSg: !And
+    - !Not [ !Condition DoNotAttachToVpc ]
+    - !Equals [ !Ref OverrideSecurityGroup, "none" ]
+  CreateRole: !Equals [ !Ref FunctionRoleArn, "none" ]
+  UseBoundary: !And
+    - !Not [!Equals [ !Ref PermissionsBoundary, "none" ]]
+    - !Condition CreateRole
+
+Resources:
+  LambdaSg:
+    Type: AWS::EC2::SecurityGroup
+    Condition: CreateLambdaSg
+    Properties:
+      GroupName: cfn-resource-kafka-provider
+      GroupDescription: "SG for Customer procider KafkaTopic"
+      VpcId: !If
+        - DoNotAttachToVpc
+        - !Ref AWS::NoValue
+        - !Ref VpcId
+
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Condition: CreateRole
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+          - Action:
+              - sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service:
+                - lambda.amazonaws.com
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      PermissionsBoundary: !If
+        - UseBoundary
+        - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+
+  CustomProviderFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Description: Custom CloudFormation Provider implementation
+      CodeUri: build/
+      Handler: ews_kafka_topic.custom_resource.lambda_handler
+      MemorySize: !Ref MemorySize
+      Timeout: 60
+      Role: !If
+        - CreateRole
+        - !GetAtt 'LambdaRole.Arn'
+        - !Ref FunctionRoleArn
+      Runtime: python3.7
+      VpcConfig: !If
+        - DoNotAttachToVpc
+        - !Ref 'AWS::NoValue'
+        - SecurityGroupIds:
+            - !If
+              - CreateLambdaSg
+              - !GetAtt "LambdaSg.GroupId"
+              - !Ref OverrideSecurityGroup
+          SubnetIds: !Ref 'Subnets'
+
+  FunctionArn:
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !If
+        - DoNotAttachToVpc
+        - /cfn/resource-provider/kafka-topic/arn
+        - !Sub "/cfn/resource-provider/kafka-topic/${VpcId}/arn"
+      Value: !GetAtt CustomProviderFunction.Arn
+      Type: String
+
+Outputs:
+  FunctionName:
+    Value: !Ref CustomProviderFunction
+  FunctionArn:
+    Value: !GetAtt CustomProviderFunction.Arn

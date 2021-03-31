@@ -1,0 +1,96 @@
+{
+    "typeName": "EWS::Kafka::Topic",
+    "description": "Resource to create Kafka topics in your cluster.",
+    "sourceUrl": "https://github.com/ews-network/cfn-kafka-topic-resource-provider",
+    "definitions": {},
+    "properties": {
+        "Name": {
+            "$comment": "The name of the kafka topic",
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-zA-Z0-9_.-]+$",
+            "description": "Kafka topic name"
+        },
+        "PartitionsCount": {
+            "type": "integer",
+            "default": 1,
+            "description": "Number of partitions for the new Kafka topic"
+        },
+        "Partitions": {
+            "type": "integer",
+            "description": "Number of partitions of the Kafka topic"
+        },
+        "ReplicationFactor": {
+            "type": "integer",
+            "default": 3,
+            "description": "Kafka topic replication factor"
+        },
+        "BootstrapServers": {
+            "type": "string",
+            "minLength": 3,
+            "description": "Endpoint URL of the Kafka cluster (must be reachable from VPC) in the format hostname:port"
+        },
+        "SecurityProtocol": {
+            "type": "string",
+            "default": "PLAINTEXT",
+            "description": "Kafka Security Protocol.",
+            "enum": [
+                "PLAINTEXT",
+                "SSL",
+                "SASL_PLAINTEXT",
+                "SASL_SSL"
+            ]
+        },
+        "SASLMechanism": {
+            "type": "string",
+            "default": "PLAIN",
+            "description": "Kafka SASL mechanism for Authentication",
+            "enum": [
+                "PLAIN",
+                "GSSAPI",
+                "OAUTHBEARER",
+                "SCRAM-SHA-256",
+                "SCRAM-SHA-512"
+            ]
+        },
+        "SASLUsername": {
+            "type": "string",
+            "default": "",
+            "description": "Kafka SASL username for Authentication"
+        },
+        "SASLPassword": {
+            "type": "string",
+            "default": "",
+            "description": "Kafka SASL password for Authentication"
+        },
+        "IsConfluentKafka": {
+            "type": "boolean",
+            "default": "false",
+            "description": "Whether your Kafka Cluster is a Confluent Kafka one."
+        }
+    },
+    "additionalProperties": false,
+    "required": [
+        "Name",
+        "PartitionsCount",
+        "BootstrapServers"
+    ],
+    "createOnlyProperties": [
+        "/properties/Name",
+        "/properties/BootstrapServers"
+    ],
+    "writeOnlyProperties": [
+        "/properties/SASLPassword"
+    ],
+    "primaryIdentifier": [
+        "/properties/Name"
+    ],
+    "readOnlyProperties": [
+        "/properties/Partitions"
+    ],
+    "additionalIdentifiers": [
+        [
+            "/properties/Partitions"
+        ]
+    ]
+}

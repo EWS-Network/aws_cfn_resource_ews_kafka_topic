@@ -1,0 +1,15 @@
+{
+    "RequestType": "Update",
+    "ResponseURL": "https://httpbin.org/put",
+    "StackId": "arn:aws:cloudformation:eu-west-1:123456789012:stack/MyStack/guid",
+    "RequestId": "0123456789-0115-7897-7984-123456789",
+    "ResourceType": "Custom::KafkaTopic",
+    "LogicalResourceId": "MyTestResource",
+    "ResourceProperties": {
+        "Name": "kafka-topic-abcd",
+        "PartitionsCount": 12,
+        "ReplicationFactor": 1,
+        "BootstrapServers": "192.168.72.21:9092",
+        "SecurityProtocol": "PLAINTEXT"
+    }
+}

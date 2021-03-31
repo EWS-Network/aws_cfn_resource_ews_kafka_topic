@@ -1,0 +1,34 @@
+---
+# CFN Template used for SAM specifically.
+
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: AWS SAM template for the EWS::Kafka::Topic resource type
+
+Globals:
+  Function:
+    Timeout: 180  # docker start-up times can be long for SAM CLI
+    MemorySize: 256
+
+Resources:
+  TypeFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ews_kafka_topic.handlers.resource
+      Runtime: python3.7
+      CodeUri: build/
+
+  TestEntrypoint:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ews_kafka_topic.handlers.test_entrypoint
+      Runtime: python3.7
+      CodeUri: build/
+
+
+  CustomResource:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: ews_kafka_topic.custom_resource.lambda_handler
+      Runtime: python3.7
+      CodeUri: build/
