@@ -14,6 +14,8 @@ Metadata:
         default: Existing IAM Role to use for the CFN Macro Lambda function
       PermissionsBoundary:
         default: When creating a new role, assigns permissions boundary IAM policy via ARN
+      Secret:
+        default: Optional - Secret ARN to provide access to retrieve secrets
     ParameterGroups:
       - Parameters:
           - MemorySize
@@ -22,6 +24,7 @@ Metadata:
       - Parameters:
           - FunctionRoleArn
           - PermissionsBoundary
+          - Secret
         Label:
           default: IAM Settings
       - Parameters:
@@ -61,23 +64,42 @@ Parameters:
     MinValue: 128
     Default: 128
 
+  SecretArn:
+    Type: String
+    AllowedPattern: none|arn:aws([a-z-]+)?:secretsmanager:[a-z0-9-]+:\d{12}:secret:[\S]+
+    Default: "none"
+
+  SecretKmsKeyArn:
+    Type: String
+    Default: none
+    AllowedPattern: none|arn:aws([a-z-]+)?:kms:[a-z0-9-]+:\d{12}:[\S]+
+
+
 Conditions:
   DoNotAttachToVpc: !Equals [ !Ref VpcId, "none" ]
+  AttachVpc: !Not [!Condition DoNotAttachToVpc]
   CreateLambdaSg: !And
-    - !Not [ !Condition DoNotAttachToVpc ]
+    - !Condition AttachVpc
     - !Equals [ !Ref OverrideSecurityGroup, "none" ]
+
   CreateRole: !Equals [ !Ref FunctionRoleArn, "none" ]
+
   UseBoundary: !And
-    - !Not [!Equals [ !Ref PermissionsBoundary, "none" ]]
+    - !Not [ !Equals [ !Ref PermissionsBoundary, "none" ]]
     - !Condition CreateRole
+
+  SetSecretAccess: !Not
+    - !Equals [ !Ref SecretArn, "none" ]
+  SetSecretKeyAccess: !Not
+    - !Equals [ !Ref SecretKmsKeyArn, "none" ]
 
 Resources:
   LambdaSg:
     Type: AWS::EC2::SecurityGroup
     Condition: CreateLambdaSg
     Properties:
-      GroupName: cfn-resource-kafka-provider
-      GroupDescription: "SG for Customer procider KafkaTopic"
+      GroupName: !Sub "${AWS::StackName}-cfn-resource-kafka-provider"
+      GroupDescription: "SG for Customer provider KafkaTopic"
       VpcId: !If
         - DoNotAttachToVpc
         - !Ref AWS::NoValue
@@ -101,6 +123,28 @@ Resources:
       PermissionsBoundary: !If
         - UseBoundary
         - !Ref PermissionsBoundary
+        - !Ref AWS::NoValue
+      Policies: !If
+        - SetSecretAccess
+        - - PolicyName: SecretAccess
+            PolicyDocument:
+              Version: 2012-10-17
+              Statement:
+                - Sid: SecretAccess
+                  Effect: Allow
+                  Resource:
+                    - !Ref SecretArn
+                  Action:
+                    - secretsmanager:GetSecretValue
+                - !If
+                  - SetSecretKeyAccess
+                  - Sid: SecretKmsKeyAccess
+                    Effect: Allow
+                    Resource:
+                      - !Ref SecretKmsKeyArn
+                    Action:
+                      - kms:Decrypt
+                  - !Ref AWS::NoValue
         - !Ref AWS::NoValue
 
   CustomProviderFunction:

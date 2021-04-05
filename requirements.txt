@@ -4,3 +4,4 @@ confluent-kafka==1.6.1
 cfn_resource_provider>=1.0
 importlib-metadata>=3.10.0
 typing-extensions>=3.7.4.3
+aws-cfn-custom-resource-resolve-parser==0.0.1

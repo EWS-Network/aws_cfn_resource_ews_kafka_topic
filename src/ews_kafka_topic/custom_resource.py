@@ -11,8 +11,10 @@ from .topics_management import (
     update_kafka_topic,
     delete_topic,
 )
+from aws_cfn_custom_resource_resolve_parser import handle
 
 LOG = logging.getLogger(__name__)
+LOG.setLevel(logging.INFO)
 
 
 def keyisset(x, y):
@@ -122,7 +124,10 @@ class KafkaTopic(ResourceProvider):
         boolean_props = ["IsConfluentKafka"]
         for prop in int_props:
             if keypresent(prop, self.properties) and isinstance(self.properties[prop], str):
-                self.properties[prop] = int(self.properties[prop])
+                try:
+                    self.properties[prop] = int(self.properties[prop])
+                except Exception as error:
+                    self.fail(f"Failed to get cluster information - {prop} - {str(error)}")
         for prop in boolean_props:
             if keypresent(prop, self.properties) and isinstance(self.properties[prop], str):
                 self.properties[prop] = (
@@ -133,35 +138,48 @@ class KafkaTopic(ResourceProvider):
         """
         Method to define the cluster information into a simple format
         """
-        self.use_confluent = self.get("IsConfluentKafka")
-        if self.use_confluent:
-            self.cluster_info["bootstrap.servers"] = self.get("BootstrapServers")
-            self.cluster_info["security.protocol"] = self.get(
-                "SecurityProtocol", default="PLAINTEXT"
-            )
-            self.cluster_info["sasl.mechanism"] = self.get("SASLMechanism")
-            self.cluster_info["sasl.username"] = self.get("SASLUsername")
-            self.cluster_info["sasl.password"] = self.get("SASLPassword")
-        else:
-            self.cluster_info["bootstrap_servers"] = self.get("BootstrapServers")
-            self.cluster_info["security_protocol"] = self.get("SecurityProtocol")
-            self.cluster_info["sasl_mechanism"] = self.get("SASLMechanism")
-            self.cluster_info["sasl_plain_username"] = self.get("SASLUsername")
-            self.cluster_info["sasl_plain_password"] = self.get("SASLPassword")
+        try:
+            self.use_confluent = self.get("IsConfluentKafka")
+            if self.use_confluent:
+                self.cluster_info["bootstrap.servers"] = self.get("BootstrapServers")
+                self.cluster_info["security.protocol"] = self.get(
+                    "SecurityProtocol", default="PLAINTEXT"
+                )
+                self.cluster_info["sasl.mechanism"] = self.get("SASLMechanism")
+                self.cluster_info["sasl.username"] = self.get("SASLUsername")
+                self.cluster_info["sasl.password"] = self.get("SASLPassword")
+            else:
+                self.cluster_info["bootstrap_servers"] = self.get("BootstrapServers")
+                self.cluster_info["security_protocol"] = self.get("SecurityProtocol")
+                self.cluster_info["sasl_mechanism"] = self.get("SASLMechanism")
+                self.cluster_info["sasl_plain_username"] = self.get("SASLUsername")
+                self.cluster_info["sasl_plain_password"] = self.get("SASLPassword")
+        except Exception as error:
+            self.fail(f"Failed to get cluster information - {str(error)}")
+
+        for key, value in self.cluster_info.items():
+            if isinstance(value, str) and value.find("resolve:secretsmanager") >= 0:
+                try:
+                    self.cluster_info[key] = handle(value)
+                except Exception as error:
+                    LOG.error("Failed to import secrets from SecretsManager")
+                    self.fail(str(error))
 
     def create(self):
         """
         Method to create a new Kafka topic
         :return:
         """
-        self.define_cluster_info()
         LOG.info(f"Attempting to create new topic {self.get('Name')}")
+        self.define_cluster_info()
         cluster_url = (
             self.cluster_info["bootstrap.servers"]
             if self.get("IsConfluentKafka")
             else self.cluster_info["bootstrap_servers"]
         )
         LOG.info(f"Cluster is {cluster_url}")
+        if not self.get("PartitionsCount") >= 1:
+            self.fail("The number of partitions must be a strictly positive value >= 1")
         try:
             topic_name = create_new_kafka_topic(
                 self.get("Name"),
@@ -200,6 +218,10 @@ class KafkaTopic(ResourceProvider):
         :return:
         """
         self.define_cluster_info()
+        if self.get_old("Name") is None and self.get_old("Name") == "cloud-not-create":
+            LOG.warning("Deleting failed create resource.")
+            self.success("Deleting non-working resource")
+            return
         try:
             delete_topic(self.get("Name"), self.cluster_info, self.use_confluent)
         except Exception as error:
