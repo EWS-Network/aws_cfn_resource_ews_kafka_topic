@@ -92,5 +92,32 @@
         [
             "/properties/Partitions"
         ]
-    ]
+    ],
+"handlers": {
+        "create": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        },
+        "read": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        },
+        "update": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        },
+        "delete": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        },
+        "list": {
+            "permissions": [
+                "secretsmanager:GetSecretValue"
+            ]
+        }
+    }
 }

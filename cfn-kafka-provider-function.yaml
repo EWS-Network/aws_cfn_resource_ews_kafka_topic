@@ -170,16 +170,6 @@ Resources:
               - !Ref OverrideSecurityGroup
           SubnetIds: !Ref 'Subnets'
 
-  FunctionArn:
-    Type: AWS::SSM::Parameter
-    Properties:
-      Name: !If
-        - DoNotAttachToVpc
-        - /cfn/resource-provider/kafka-topic/arn
-        - !Sub "/cfn/resource-provider/kafka-topic/${VpcId}/arn"
-      Value: !GetAtt CustomProviderFunction.Arn
-      Type: String
-
 Outputs:
   FunctionName:
     Value: !Ref CustomProviderFunction

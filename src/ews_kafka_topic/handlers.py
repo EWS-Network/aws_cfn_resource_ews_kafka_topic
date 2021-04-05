@@ -132,7 +132,6 @@ def read_handler(
     callback_context: MutableMapping[str, Any],
 ) -> ProgressEvent:
     model = request.desiredResourceState
-    # TODO: put code here
     return ProgressEvent(
         status=OperationStatus.SUCCESS,
         resourceModel=model,

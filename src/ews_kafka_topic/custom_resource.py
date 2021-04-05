@@ -123,16 +123,20 @@ class KafkaTopic(ResourceProvider):
         int_props = ["PartitionsCount", "ReplicationFactor"]
         boolean_props = ["IsConfluentKafka"]
         for prop in int_props:
-            if keypresent(prop, self.properties) and isinstance(self.properties[prop], str):
+            if keypresent(prop, self.properties) and isinstance(
+                self.properties[prop], str
+            ):
                 try:
                     self.properties[prop] = int(self.properties[prop])
                 except Exception as error:
-                    self.fail(f"Failed to get cluster information - {prop} - {str(error)}")
+                    self.fail(
+                        f"Failed to get cluster information - {prop} - {str(error)}"
+                    )
         for prop in boolean_props:
-            if keypresent(prop, self.properties) and isinstance(self.properties[prop], str):
-                self.properties[prop] = (
-                   self.properties[prop].lower() == "true"
-                )
+            if keypresent(prop, self.properties) and isinstance(
+                self.properties[prop], str
+            ):
+                self.properties[prop] = self.properties[prop].lower() == "true"
 
     def define_cluster_info(self):
         """
@@ -218,7 +222,9 @@ class KafkaTopic(ResourceProvider):
         :return:
         """
         self.define_cluster_info()
-        if self.get_old("Name") is None and self.get_old("Name") == "cloud-not-create":
+        LOG.info(self.get("Name"))
+        LOG.info(self.get_old("Name"))
+        if self.get_old("Name") is None and self.get("Name"):
             LOG.warning("Deleting failed create resource.")
             self.success("Deleting non-working resource")
             return

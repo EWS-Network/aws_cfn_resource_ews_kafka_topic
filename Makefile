@@ -24,7 +24,7 @@ export PRINT_HELP_PYSCRIPT
 BROWSER := python -c "$$BROWSER_PYSCRIPT"
 
 ifndef BUCKET
-BUCKET	:= eu-west-1.files.compose-x.io
+BUCKET	:= eu-west-1.files.ews-network.net
 endif
 
 help:
@@ -79,7 +79,7 @@ servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 conform	: ## Conform to a standard of coding syntax
-	black setup.py cfn_kafka_topic_provider tests
+	black src tests
 
 dist: clean ## builds source and wheel package
 	cd src; python setup.py sdist
@@ -88,7 +88,7 @@ dist: clean ## builds source and wheel package
 
 package: dist
 	rm -rf build function.zip; mkdir build
-	pip install src/dist/ews_kafka_topic*.whl -t build/
+	pip install src/dist/ews_kafka_topic*.whl -t build/ -U
 # 	cd build ; zip -qr9 ../function.zip *
 
 upload:	package
