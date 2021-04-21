@@ -20,6 +20,9 @@
             "type": "integer",
             "description": "Number of partitions of the Kafka topic"
         },
+        "Settings": {
+            "type": "object"
+        },
         "ReplicationFactor": {
             "type": "integer",
             "default": 3,

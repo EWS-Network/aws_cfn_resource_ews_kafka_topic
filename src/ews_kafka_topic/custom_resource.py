@@ -80,6 +80,9 @@ class KafkaTopic(ResourceProvider):
                     "default": 1,
                     "description": "Kafka topic replication factor",
                 },
+                "Settings": {
+                    "type": "object"
+                },
                 "BootstrapServers": {
                     "type": "string",
                     "minLength": 3,
@@ -191,6 +194,7 @@ class KafkaTopic(ResourceProvider):
                 self.cluster_info,
                 replication_factor=self.get("ReplicationFactor"),
                 is_confluent=self.get("IsConfluentKafka"),
+                settings=self.get("Settings")
             )
             self.physical_resource_id = topic_name
             self.set_attribute("Name", self.get("Name"))
