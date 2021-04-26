@@ -49,7 +49,7 @@ def keypresent(x, y):
 
 
 def create_new_kafka_topic(
-    name, partitions, cluster_info, replication_factor=None, is_confluent=False
+    name, partitions, cluster_info, replication_factor=None, is_confluent=False, settings=None
 ):
     """
     Function to create new Kafka topic
@@ -69,7 +69,7 @@ def create_new_kafka_topic(
     else:
         try:
             admin_client = KafkaAdminClient(**cluster_info)
-            topic = NewTopic(name, partitions, replication_factor)
+            topic = NewTopic(name, partitions, replication_factor, topic_configs=settings)
             admin_client.create_topics([topic])
             return name
         except errors.TopicAlreadyExistsError:

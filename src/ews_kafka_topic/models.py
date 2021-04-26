@@ -42,6 +42,7 @@ class ResourceModel(BaseModel):
     Name: Optional[str]
     PartitionsCount: Optional[int]
     Partitions: Optional[int]
+    Settings: Optional[MutableMapping[str, Any]]
     ReplicationFactor: Optional[int]
     BootstrapServers: Optional[str]
     SecurityProtocol: Optional[str]
@@ -63,6 +64,7 @@ class ResourceModel(BaseModel):
             Name=json_data.get("Name"),
             PartitionsCount=json_data.get("PartitionsCount"),
             Partitions=json_data.get("Partitions"),
+            Settings=json_data.get("Settings"),
             ReplicationFactor=json_data.get("ReplicationFactor"),
             BootstrapServers=json_data.get("BootstrapServers"),
             SecurityProtocol=json_data.get("SecurityProtocol"),
@@ -75,3 +77,5 @@ class ResourceModel(BaseModel):
 
 # work around possible type aliasing issues when variable has same name as a model
 _ResourceModel = ResourceModel
+
+

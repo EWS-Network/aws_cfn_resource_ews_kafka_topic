@@ -12,7 +12,12 @@
             "PartitionsCount": 6,
             "ReplicationFactor": 1,
             "BootstrapServers": "192.168.72.21:9092",
-            "SecurityProtocol": "PLAINTEXT"
+            "SecurityProtocol": "PLAINTEXT",
+            "Settings": {
+                "cleanup.policy": "compact,delete",
+                "min.compaction.lag.ms": 1209600000,
+                "retention.ms": 15778800000
+            }
         },
         "logicalResourceIdentifier": "ANewKafkaTopic"
     },

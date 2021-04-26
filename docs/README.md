@@ -14,6 +14,7 @@ To declare this entity in your AWS CloudFormation template, use the following sy
     "Properties" : {
         "<a href="#name" title="Name">Name</a>" : <i>String</i>,
         "<a href="#partitionscount" title="PartitionsCount">PartitionsCount</a>" : <i>Integer</i>,
+        "<a href="#settings" title="Settings">Settings</a>" : <i>Map</i>,
         "<a href="#replicationfactor" title="ReplicationFactor">ReplicationFactor</a>" : <i>Integer</i>,
         "<a href="#bootstrapservers" title="BootstrapServers">BootstrapServers</a>" : <i>String</i>,
         "<a href="#securityprotocol" title="SecurityProtocol">SecurityProtocol</a>" : <i>String</i>,
@@ -32,6 +33,7 @@ Type: EWS::Kafka::Topic
 Properties:
     <a href="#name" title="Name">Name</a>: <i>String</i>
     <a href="#partitionscount" title="PartitionsCount">PartitionsCount</a>: <i>Integer</i>
+    <a href="#settings" title="Settings">Settings</a>: <i>Map</i>
     <a href="#replicationfactor" title="ReplicationFactor">ReplicationFactor</a>: <i>Integer</i>
     <a href="#bootstrapservers" title="BootstrapServers">BootstrapServers</a>: <i>String</i>
     <a href="#securityprotocol" title="SecurityProtocol">SecurityProtocol</a>: <i>String</i>
@@ -64,6 +66,14 @@ Number of partitions for the new Kafka topic
 _Required_: Yes
 
 _Type_: Integer
+
+_Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
+
+#### Settings
+
+_Required_: No
+
+_Type_: Map
 
 _Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
 
