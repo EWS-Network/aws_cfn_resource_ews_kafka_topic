@@ -20,8 +20,7 @@ To declare this entity in your AWS CloudFormation template, use the following sy
         "<a href="#securityprotocol" title="SecurityProtocol">SecurityProtocol</a>" : <i>String</i>,
         "<a href="#saslmechanism" title="SASLMechanism">SASLMechanism</a>" : <i>String</i>,
         "<a href="#saslusername" title="SASLUsername">SASLUsername</a>" : <i>String</i>,
-        "<a href="#saslpassword" title="SASLPassword">SASLPassword</a>" : <i>String</i>,
-        "<a href="#isconfluentkafka" title="IsConfluentKafka">IsConfluentKafka</a>" : <i>Boolean</i>
+        "<a href="#saslpassword" title="SASLPassword">SASLPassword</a>" : <i>String</i>
     }
 }
 </pre>
@@ -40,7 +39,6 @@ Properties:
     <a href="#saslmechanism" title="SASLMechanism">SASLMechanism</a>: <i>String</i>
     <a href="#saslusername" title="SASLUsername">SASLUsername</a>: <i>String</i>
     <a href="#saslpassword" title="SASLPassword">SASLPassword</a>: <i>String</i>
-    <a href="#isconfluentkafka" title="IsConfluentKafka">IsConfluentKafka</a>: <i>Boolean</i>
 </pre>
 
 ## Properties
@@ -140,16 +138,6 @@ Kafka SASL password for Authentication
 _Required_: No
 
 _Type_: String
-
-_Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
-
-#### IsConfluentKafka
-
-Whether your Kafka Cluster is a Confluent Kafka one.
-
-_Required_: No
-
-_Type_: Boolean
 
 _Update requires_: [No interruption](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-updating-stacks-update-behaviors.html#update-no-interrupt)
 

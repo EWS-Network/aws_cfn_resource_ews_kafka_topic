@@ -30,22 +30,14 @@ def get_cluster_config(model):
     """
 
     :param model:
-    :param bool use_confluent:
     :return:
     """
-    cluster_config = {}
-    if bool(model.IsConfluentKafka):
-        cluster_config["bootstrap.servers"] = model.BootstrapServers
-        cluster_config["security.protocol"] = model.SecurityProtocol
-        cluster_config["sasl.mechanism"] = model.SASLMechanism
-        cluster_config["sasl.username"] = model.SASLUsername
-        cluster_config["sasl.password"] = model.SASLPassword
-    else:
-        cluster_config["bootstrap_servers"] = model.BootstrapServers
-        cluster_config["security_protocol"] = model.SecurityProtocol
-        cluster_config["sasl_mechanism"] = model.SASLMechanism
-        cluster_config["sasl_plain_username"] = model.SASLUsername
-        cluster_config["sasl_plain_password"] = model.SASLPassword
+    cluster_config = dict()
+    cluster_config["bootstrap_servers"] = model.BootstrapServers
+    cluster_config["security_protocol"] = model.SecurityProtocol
+    cluster_config["sasl_mechanism"] = model.SASLMechanism
+    cluster_config["sasl_plain_username"] = model.SASLUsername
+    cluster_config["sasl_plain_password"] = model.SASLPassword
     return cluster_config
 
 
@@ -75,7 +67,6 @@ def create_handler(
             model.PartitionsCount,
             cluster_config,
             model.ReplicationFactor,
-            bool(model.IsConfluentKafka),
         )
         progress.status = OperationStatus.SUCCESS
     except Exception as e:
@@ -99,7 +90,9 @@ def update_handler(
     )
     cluster_config = get_cluster_config(model)
     update_kafka_topic(
-        model.Name, model.PartitionsCount, cluster_config, bool(model.IsConfluentKafka)
+        model.Name,
+        model.PartitionsCount,
+        cluster_config,
     )
     return read_handler(session, request, callback_context)
 
@@ -117,7 +110,7 @@ def delete_handler(
     )
     cluster_config = get_cluster_config(model)
     try:
-        delete_topic(model.Name, cluster_config, bool(model.IsConfluentKafka))
+        delete_topic(model.Name, cluster_config)
         return progress
     except Exception as error:
         return ProgressEvent.failed(

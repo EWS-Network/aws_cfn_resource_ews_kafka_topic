@@ -147,10 +147,10 @@ Resources:
                   - !Ref AWS::NoValue
         - !Ref AWS::NoValue
 
-  CustomProviderFunction:
+  TopicsProvider:
     Type: AWS::Serverless::Function
     Properties:
-      Description: Custom CloudFormation Provider implementation
+      Description: Custom CloudFormation Provider for Custom::KafkaTopic
       CodeUri: build/
       Handler: ews_kafka_topic.custom_resource.lambda_handler
       MemorySize: !Ref MemorySize
@@ -172,6 +172,6 @@ Resources:
 
 Outputs:
   FunctionName:
-    Value: !Ref CustomProviderFunction
+    Value: !Ref TopicsProvider
   FunctionArn:
-    Value: !GetAtt CustomProviderFunction.Arn
+    Value: !GetAtt TopicsProvider.Arn

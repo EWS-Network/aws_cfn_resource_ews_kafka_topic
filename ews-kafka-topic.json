@@ -65,11 +65,6 @@
             "type": "string",
             "default": "",
             "description": "Kafka SASL password for Authentication"
-        },
-        "IsConfluentKafka": {
-            "type": "boolean",
-            "default": "false",
-            "description": "Whether your Kafka Cluster is a Confluent Kafka one."
         }
     },
     "additionalProperties": false,

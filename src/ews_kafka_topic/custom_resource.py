@@ -57,7 +57,6 @@ class KafkaTopic(ResourceProvider):
         Init method
         """
         self.cluster_info = {}
-        self.use_confluent = False
         super(KafkaTopic, self).__init__()
         self.request_schema = {
             "type": "object",
@@ -80,13 +79,11 @@ class KafkaTopic(ResourceProvider):
                     "default": 1,
                     "description": "Kafka topic replication factor",
                 },
-                "Settings": {
-                    "type": "object"
-                },
+                "Settings": {"type": "object"},
                 "BootstrapServers": {
                     "type": "string",
                     "minLength": 3,
-                    "description": "Endpoint URL of the Kafka cluster (must be reachable from VPC) in the format hostname:port",
+                    "description": "Endpoint URL of the Kafka cluster (must route to brokers), format hostname:port",
                 },
                 "SecurityProtocol": {
                     "type": "string",
@@ -113,11 +110,6 @@ class KafkaTopic(ResourceProvider):
                 "SASLPassword": {
                     "type": "string",
                     "description": "Kafka SASL password for Authentication",
-                },
-                "IsConfluentKafka": {
-                    "type": "boolean",
-                    "default": False,
-                    "description": "Whether your Kafka Cluster is a Confluent Kafka one.",
                 },
             },
         }
@@ -146,21 +138,11 @@ class KafkaTopic(ResourceProvider):
         Method to define the cluster information into a simple format
         """
         try:
-            self.use_confluent = self.get("IsConfluentKafka")
-            if self.use_confluent:
-                self.cluster_info["bootstrap.servers"] = self.get("BootstrapServers")
-                self.cluster_info["security.protocol"] = self.get(
-                    "SecurityProtocol", default="PLAINTEXT"
-                )
-                self.cluster_info["sasl.mechanism"] = self.get("SASLMechanism")
-                self.cluster_info["sasl.username"] = self.get("SASLUsername")
-                self.cluster_info["sasl.password"] = self.get("SASLPassword")
-            else:
-                self.cluster_info["bootstrap_servers"] = self.get("BootstrapServers")
-                self.cluster_info["security_protocol"] = self.get("SecurityProtocol")
-                self.cluster_info["sasl_mechanism"] = self.get("SASLMechanism")
-                self.cluster_info["sasl_plain_username"] = self.get("SASLUsername")
-                self.cluster_info["sasl_plain_password"] = self.get("SASLPassword")
+            self.cluster_info["bootstrap_servers"] = self.get("BootstrapServers")
+            self.cluster_info["security_protocol"] = self.get("SecurityProtocol")
+            self.cluster_info["sasl_mechanism"] = self.get("SASLMechanism")
+            self.cluster_info["sasl_plain_username"] = self.get("SASLUsername")
+            self.cluster_info["sasl_plain_password"] = self.get("SASLPassword")
         except Exception as error:
             self.fail(f"Failed to get cluster information - {str(error)}")
 
@@ -193,8 +175,7 @@ class KafkaTopic(ResourceProvider):
                 self.get("PartitionsCount"),
                 self.cluster_info,
                 replication_factor=self.get("ReplicationFactor"),
-                is_confluent=self.get("IsConfluentKafka"),
-                settings=self.get("Settings")
+                settings=self.get("Settings"),
             )
             self.physical_resource_id = topic_name
             self.set_attribute("Name", self.get("Name"))
@@ -215,7 +196,6 @@ class KafkaTopic(ResourceProvider):
                 self.get("Name"),
                 self.get("PartitionsCount"),
                 self.cluster_info,
-                self.use_confluent,
             )
         except Exception as error:
             self.fail(str(error))
@@ -233,7 +213,7 @@ class KafkaTopic(ResourceProvider):
             self.success("Deleting non-working resource")
             return
         try:
-            delete_topic(self.get("Name"), self.cluster_info, self.use_confluent)
+            delete_topic(self.get("Name"), self.cluster_info)
         except Exception as error:
             self.fail(
                 f"Failed to delete topic {self.get_attribute('Name')}. {str(error)}"

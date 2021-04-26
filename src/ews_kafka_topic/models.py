@@ -49,7 +49,6 @@ class ResourceModel(BaseModel):
     SASLMechanism: Optional[str]
     SASLUsername: Optional[str]
     SASLPassword: Optional[str]
-    IsConfluentKafka: Optional[bool]
 
     @classmethod
     def _deserialize(
@@ -71,11 +70,8 @@ class ResourceModel(BaseModel):
             SASLMechanism=json_data.get("SASLMechanism"),
             SASLUsername=json_data.get("SASLUsername"),
             SASLPassword=json_data.get("SASLPassword"),
-            IsConfluentKafka=json_data.get("IsConfluentKafka"),
         )
 
 
 # work around possible type aliasing issues when variable has same name as a model
 _ResourceModel = ResourceModel
-
-
