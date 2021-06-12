@@ -20,6 +20,11 @@
             "type": "integer",
             "description": "Number of partitions of the Kafka topic"
         },
+        "ImportIfExists": {
+            "type": "boolean",
+            "description": "Whether or not import an existing topic if already exists",
+            "default": false
+        },
         "Settings": {
             "type": "object"
         },

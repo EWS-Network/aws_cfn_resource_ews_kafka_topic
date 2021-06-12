@@ -7,7 +7,8 @@
 
 import os
 import re
-from setuptools import setup, find_packages
+
+from setuptools import find_packages, setup
 
 DIR_HERE = os.path.abspath(os.path.dirname(__file__))
 # REMOVE UNSUPPORTED RST syntax
@@ -27,13 +28,13 @@ except FileNotFoundError:
     history = "Latest packaged version."
 
 requirements = []
-with open(f"{DIR_HERE}/../requirements.txt", "r") as req_fd:
+with open(f"{DIR_HERE}/requirements.txt", "r") as req_fd:
     for line in req_fd:
         requirements.append(line.strip())
 
 test_requirements = []
 try:
-    with open(f"{DIR_HERE}/../requirements_dev.txt", "r") as req_fd:
+    with open(f"{DIR_HERE}/requirements_dev.txt", "r") as req_fd:
         for line in req_fd:
             test_requirements.append(line.strip())
 except FileNotFoundError:
@@ -65,7 +66,10 @@ setup(
     include_package_data=True,
     keywords="ews_kafka_topic",
     name="ews_kafka_topic",
-    packages=find_packages(include=["ews_kafka_topic", "ews_kafka_topic.*"]),
+    packages=find_packages(
+        include=["ews_kafka_topic", "ews_kafka_topic.*"], where="src"
+    ),
+    package_dir={"": "src"},
     setup_requires=setup_requirements,
     test_suite="tests",
     tests_require=test_requirements,

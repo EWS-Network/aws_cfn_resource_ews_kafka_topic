@@ -5,13 +5,12 @@
 """Main module."""
 
 import logging
-from cfn_resource_provider import ResourceProvider
-from .topics_management import (
-    create_new_kafka_topic,
-    update_kafka_topic,
-    delete_topic,
-)
+
 from aws_cfn_custom_resource_resolve_parser import handle
+from cfn_resource_provider import ResourceProvider
+from kafka import KafkaConsumer, errors
+
+from .topics_management import create_new_kafka_topic, delete_topic, update_kafka_topic
 
 LOG = logging.getLogger(__name__)
 LOG.setLevel(logging.INFO)
@@ -68,6 +67,11 @@ class KafkaTopic(ResourceProvider):
                     "minLength": 1,
                     "pattern": "^[a-zA-Z0-9_.-]+$",
                     "description": "Kafka topic name",
+                },
+                "ImportIfExists": {
+                    "type": "boolean",
+                    "description": "Whether or not import an existing topic if already exists",
+                    "default": True,
                 },
                 "PartitionsCount": {
                     "type": "integer",
@@ -182,6 +186,18 @@ class KafkaTopic(ResourceProvider):
             self.set_attribute("Partitions", self.get("PartitionsCount"))
             self.set_attribute("BootstrapServers", self.get("BootstrapServers"))
             self.success(f"Created new topic {topic_name}")
+        except errors.TopicAlreadyExistsError as error:
+            if self.get("ImportIfExists") is True:
+                self.physical_resource_id = self.get("Name")
+                self.set_attribute("Name", self.get("Name"))
+                self.set_attribute("Partitions", self.get("PartitionsCount"))
+                self.set_attribute("BootstrapServers", self.get("BootstrapServers"))
+                self.success("Existing topic imported")
+            else:
+                self.physical_resource_id = "could-not-create-nor-import"
+                self.fail(
+                    f"Failed to create the topic {self.get('Name')}, {str(error)}"
+                )
         except Exception as error:
             self.physical_resource_id = "could-not-create"
             self.fail(f"Failed to create the topic {self.get('Name')}, {str(error)}")

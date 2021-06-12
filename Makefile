@@ -82,14 +82,13 @@ conform	: ## Conform to a standard of coding syntax
 	black src tests
 
 dist: clean ## builds source and wheel package
-	cd src; python setup.py sdist
-	cd src; python setup.py bdist_wheel
-	ls -l src/dist
+	python setup.py sdist
+	python setup.py bdist_wheel
 
 package: dist
 	rm -rf build function.zip; mkdir build
-	pip install src/dist/ews_kafka_topic*.whl -t build/ -U
-# 	cd build ; zip -qr9 ../function.zip *
+	pip install dist/ews_kafka_topic*.whl -t build/ -U
+	cd build ; zip -qr9 ../function.zip *
 
 upload:	package
 	aws cloudformation package \
