@@ -7,11 +7,7 @@ Module to handle Kafka topics management.
 """
 
 from kafka import KafkaConsumer, errors
-from kafka.admin import (
-    KafkaAdminClient,
-    NewTopic,
-    NewPartitions,
-)
+from kafka.admin import KafkaAdminClient, NewPartitions, NewTopic
 
 
 def keyisset(x, y):
@@ -100,14 +96,15 @@ def update_kafka_topic(name, partitions, cluster_info):
 
     consumer_client = KafkaConsumer(**cluster_info)
     curr_partitions = len(consumer_client.partitions_for_topic(name))
-    if partitions == curr_partitions:
-        print(
-            f"Topic partitions is already set to {curr_partitions}. Nothing to update"
-        )
-    elif partitions < curr_partitions:
+    if partitions < curr_partitions:
         raise ValueError(
             f"The number of partitions set {partitions} for topic "
             f"{name} is lower than current partitions count {curr_partitions}"
         )
-    admin_client = KafkaAdminClient(**cluster_info)
-    admin_client.create_partitions({name: NewPartitions(partitions)})
+    elif partitions > curr_partitions:
+        admin_client = KafkaAdminClient(**cluster_info)
+        admin_client.create_partitions({name: NewPartitions(partitions)})
+    elif partitions == curr_partitions:
+        print(
+            f"Topic partitions is already set to {curr_partitions}. Nothing to update"
+        )
