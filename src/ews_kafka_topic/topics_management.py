@@ -93,18 +93,23 @@ def update_kafka_topic(name, partitions, cluster_info):
     :param cluster_info:
     :return:
     """
-
     consumer_client = KafkaConsumer(**cluster_info)
-    curr_partitions = len(consumer_client.partitions_for_topic(name))
-    if partitions < curr_partitions:
+    curr_partitions = consumer_client.partitions_for_topic(name)
+    if curr_partitions:
+        curr_partitions_count = len(curr_partitions)
+    else:
+        raise LookupError(
+            f"Failed to retrieve the current number of partitions for {name}"
+        )
+    if partitions < curr_partitions_count:
         raise ValueError(
             f"The number of partitions set {partitions} for topic "
-            f"{name} is lower than current partitions count {curr_partitions}"
+            f"{name} is lower than current partitions count {curr_partitions} - {curr_partitions_count}"
         )
-    elif partitions > curr_partitions:
+    elif partitions > curr_partitions_count:
         admin_client = KafkaAdminClient(**cluster_info)
         admin_client.create_partitions({name: NewPartitions(partitions)})
-    elif partitions == curr_partitions:
+    elif partitions == curr_partitions_count:
         print(
-            f"Topic partitions is already set to {curr_partitions}. Nothing to update"
+            f"Topic {name} partitions is already set to {curr_partitions} {curr_partitions_count}. Nothing to update"
         )
