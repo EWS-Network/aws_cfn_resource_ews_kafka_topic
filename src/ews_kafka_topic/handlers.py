@@ -17,7 +17,7 @@ from cloudformation_cli_python_lib import (
 )
 
 from .models import ResourceHandlerRequest, ResourceModel
-from .topics_management import create_new_kafka_topic, update_kafka_topic, delete_topic
+from .topics_management import create_new_kafka_topic, delete_topic, update_kafka_topic
 
 LOG = logging.getLogger(__name__)
 TYPE_NAME = "EWS::Kafka::Topic"

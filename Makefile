@@ -79,7 +79,10 @@ servedocs: docs ## compile the docs watching for changes
 	watchmedo shell-command -p '*.rst' -c '$(MAKE) -C docs html' -R -D .
 
 conform	: ## Conform to a standard of coding syntax
-	black src tests
+	isort --profile black src
+	black src tests setup.py
+	find src -name "*.json" -type f  -exec sed -i '1s/^\xEF\xBB\xBF//' {} +
+
 
 dist: clean ## builds source and wheel package
 	python setup.py sdist
